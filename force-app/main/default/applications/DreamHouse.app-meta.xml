@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#A82424</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>DreamHouse</label>
+    <navType>Standard</navType>
+    <tabs>standard-Account</tabs>
+    <tabs>Broker__c</tabs>
+    <tabs>Property__c</tabs>
+    <tabs>Sale__c</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>DreamHouse_UtilityBar</utilityBar>
+</CustomApplication>
