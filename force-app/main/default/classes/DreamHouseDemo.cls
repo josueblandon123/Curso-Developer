@@ -1,4 +1,4 @@
-public class DreamHouseDemo {
+public with sharing class DreamHouseDemo {
 
     /**
      * Método para ejecutar directamente desde la Consola de Desarrollador.
