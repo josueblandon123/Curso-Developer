@@ -1,43 +1,66 @@
 public with sharing class SaleTriggerHelper {
 
     /**
-     * Update the property status to "Sold" when a sale is recorded.
+     * Updates the property status to "Sold" and assigns the sale broker 
+     * to the property when a sale is recorded.
      */
     public static void updatePropertyStatusToSold(List<Sale__c> newSales) {
-        Set<Id> propertyIds = new Set<Id>();
+        // Map property ID to its corresponding sale record for easy retrieval
+        Map<Id, Sale__c> propertyIdToSaleMap = new Map<Id, Sale__c>();
 
-        // Collect the IDs of the properties involved
+        // Collect the IDs of the properties involved and map them to their sale
         for (Sale__c sale : newSales) {
             if (sale.Property__c != null) {
-                propertyIds.add(sale.Property__c);
+                propertyIdToSaleMap.put(sale.Property__c, sale);
             }
         }
 
-        if (propertyIds.isEmpty()) {
+        if (propertyIdToSaleMap.isEmpty()) {
             return;
         }
 
-        // Check the properties to verify their current status.
+        // Query properties in USER_MODE
         List<Property__c> propertiesToUpdate = [
-            SELECT Id, Status__c 
+            SELECT Id, Status__c, Broker__c 
             FROM Property__c 
-            WHERE Id IN :propertyIds 
+            WHERE Id IN :propertyIdToSaleMap.keySet() 
             WITH USER_MODE
         ];
 
         List<Property__c> updatedProperties = new List<Property__c>();
 
-        // Change the status to 'Sold' only if it is not already sold.
+        // Change status to 'Sold' and update Broker__c if necessary
         for (Property__c prop : propertiesToUpdate) {
+            Sale__c relatedSale = propertyIdToSaleMap.get(prop.Id);
+            Boolean isModified = false;
+
+            // Update status to Sold
             if (prop.Status__c != 'Sold') {
                 prop.Status__c = 'Sold';
+                isModified = true;
+            }
+
+            // Assign the Broker from Sale to Property if available
+            if (relatedSale != null && relatedSale.Broker__c != null && prop.Broker__c != relatedSale.Broker__c) {
+                prop.Broker__c = relatedSale.Broker__c;
+                isModified = true;
+            }
+
+            if (isModified) {
                 updatedProperties.add(prop);
             }
         }
 
-        // Run DML safely
+        // Execute DML safely with error handling
         if (!updatedProperties.isEmpty()) {
-            update as user updatedProperties;
+            try {
+                update as user updatedProperties;
+            } catch (DmlException e) {
+                // Attach error to incoming sale records to gracefully stop transaction
+                for (Sale__c sale : newSales) {
+                    sale.addError('Could not update the associated property: ' + e.getDmlMessage(0));
+                }
+            }
         }
     }
 }
