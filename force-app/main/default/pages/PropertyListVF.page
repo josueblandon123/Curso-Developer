@@ -1,0 +1,143 @@
+<apex:page controller="PropertyController" lightningStylesheets="true" docType="html-5.0">
+    <apex:slds />
+    
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <title>DreamHouse - Visualforce Property List</title>
+            <style>
+                .property-card {
+                    transition: transform 0.2s ease-in-out;
+                }
+                .property-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                }
+                .property-img {
+                    height: 180px;
+                    object-fit: cover;
+                    width: 100%;
+                }
+            </style>
+        </head>
+        
+        <body class="slds-scope slds-p-around_medium">
+            <!-- Header section -->
+            <div class="slds-page-header slds-m-bottom_medium">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-media">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-home">
+                                    <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
+                                        <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/standard-sprite/svg/symbols.svg#home')}"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h1 class="slds-page-header__title slds-truncate">Properties (Visualforce View)</h1>
+                                <p class="slds-page-header__name-meta">Reusing PropertyController Apex Logic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="spinner" class="slds-spinner_container slds-is-relative slds-m-vertical_large">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading properties...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+
+            <!-- Property Grid Container -->
+            <div id="propertyGrid" class="slds-grid slds-wrap slds-gutters">
+                <!-- Tiles will be dynamically injected here via JS Remoting -->
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    loadProperties();
+                });
+
+                function loadProperties() {
+                    // Call Apex @RemoteAction method reusing the existing controller
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.PropertyController.getFilteredProperties}',
+                        '',   // searchKey
+                        0,    // maxPrice
+                        0,    // bedrooms
+                        0,    // bathrooms
+                        12,   // pageSize
+                        1,    // pageNumber
+                        function(result, event) {
+                            document.getElementById('spinner').style.display = 'none';
+                            
+                            if (event.status && result && result.records) {
+                                renderProperties(result.records);
+                            } else {
+                                console.error('Error fetching properties:', event.message);
+                                document.getElementById('propertyGrid').innerHTML = 
+                                    '<div class="slds-col slds-size_1-of-1 slds-notify slds-notify_alert slds-alert_error">Error loading properties</div>';
+                            }
+                        },
+                        { escape: false }
+                    );
+                }
+
+                function renderProperties(properties) {
+                    var container = document.getElementById('propertyGrid');
+                    container.innerHTML = '';
+
+                    if (properties.length === 0) {
+                        container.innerHTML = '<div class="slds-col slds-size_1-of-1"><p>No properties found.</p></div>';
+                        return;
+                    }
+
+                    properties.forEach(function(prop) {
+                        var pictureUrl = prop.Picture_URL__c ? prop.Picture_URL__c : '/img/btest/default_property.png';
+                        var brokerName = prop.Broker__r ? prop.Broker__r.Name : 'N/A';
+                        var formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(prop.Price__c || 0);
+
+                        var cardHtml = `
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3 slds-m-bottom_medium">
+                                <article class="slds-card property-card slds-has-boundary">
+                                    <div class="slds-media slds-media_center slds-has-flexi-truncate">
+                                        <img src="${pictureUrl}" class="property-img" alt="${prop.Name}" />
+                                    </div>
+                                    <div class="slds-card__header slds-grid">
+                                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-card__header-title">
+                                                    <a href="/${prop.Id}" target="_blank" class="slds-card__actor-title">${prop.Name}</a>
+                                                </h2>
+                                                <p class="slds-text-title">${prop.Address__c || ''}</p>
+                                            </div>
+                                        </header>
+                                    </div>
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <div class="slds-grid slds-gutters">
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <span class="slds-text-title">Price:</span>
+                                                <p class="slds-text-heading_small slds-color__text_success"><strong>${formattedPrice}</strong></p>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-2">
+                                                <span class="slds-text-title">Broker:</span>
+                                                <p class="slds-truncate">${brokerName}</p>
+                                            </div>
+                                        </div>
+                                        <div class="slds-m-top_small slds-text-body_small">
+                                            <span>Beds: ${prop.Bedrooms__c || 0}</span> | <span>Baths: ${prop.Bathrooms__c || 0}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        `;
+                        container.innerHTML += cardHtml;
+                    });
+                }
+            </script>
+        </body>
+    </html>
+</apex:page>

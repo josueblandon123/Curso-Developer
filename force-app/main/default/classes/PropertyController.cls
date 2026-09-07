@@ -8,7 +8,8 @@ public with sharing class PropertyController {
         @AuraEnabled public List<Property__c> records { get; set; }
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=true) // Use With LWC
+    @RemoteAction // Use With Visualforce Page
     public static PropertyPagedResult getFilteredProperties(
         String searchKey,
         Decimal maxPrice,
