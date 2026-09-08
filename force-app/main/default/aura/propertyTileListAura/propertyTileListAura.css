@@ -1,0 +1,11 @@
+.THIS .property-img {
+    height: 180px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.THIS .image-container {
+    overflow: hidden;
+    max-height: 180px;
+}

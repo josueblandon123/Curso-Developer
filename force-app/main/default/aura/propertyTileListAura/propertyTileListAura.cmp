@@ -1,0 +1,50 @@
+<aura:component controller="PropertyController" implements="flexipage:availableForAllPageTypes" access="global">
+    <!-- Atributos para almacenar los datos -->
+    <aura:attribute name="properties" type="List" />
+    <aura:attribute name="isLoading" type="Boolean" default="true" />
+
+    <!-- Handler de inicialización -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <div class="slds-box slds-theme_default">
+        <div class="slds-page-header slds-m-bottom_medium">
+            <h1 class="slds-page-header__title">Properties (Aura Component View)</h1>
+            <p class="slds-page-header__name-meta">Reusing PropertyController Apex Logic</p>
+        </div>
+
+        <!-- Spinner de carga -->
+        <aura:if isTrue="{!v.isLoading}">
+            <div class="slds-is-relative slds-p-around_large">
+                <lightning:spinner alternativeText="Loading..." size="medium" />
+            </div>
+        </aura:if>
+
+        <!-- Grilla de propiedades -->
+        <div class="slds-grid slds-wrap slds-gutters">
+            <aura:iteration items="{!v.properties}" var="prop">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3 slds-m-bottom_medium">
+                    <lightning:card title="{!prop.Name}" iconName="standard:home">
+                        <aura:set attribute="actions">
+                            <lightning:formattedNumber value="{!prop.Price__c}" style="currency" currencyCode="USD" />
+                        </aura:set>
+                        
+                        <div class="slds-card__body slds-card__body_inner">
+                            <div class="image-container slds-m-bottom_small">
+                                <!-- FIX: Eliminado $Resource.SLDS213 no existente. 
+                                     Se asigna la URL directa y si falla o está vacía, el controlador JS se encarga del fallback -->
+                                <img src="{!prop.Picture_URL__c}" 
+                                     alt="{!prop.Name}" 
+                                     class="property-img" 
+                                     onerror="{!c.handleImageError}" />
+                            </div>
+                            <p class="slds-text-title_caps">Broker: {!prop.Broker__r.Name}</p>
+                            <div class="slds-m-top_x-small">
+                                <span>Beds: {!prop.Bedrooms__c}</span> | <span>Baths: {!prop.Bathrooms__c}</span>
+                            </div>
+                        </div>
+                    </lightning:card>
+                </div>
+            </aura:iteration>
+        </div>
+    </div>
+</aura:component>
