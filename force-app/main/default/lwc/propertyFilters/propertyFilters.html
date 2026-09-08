@@ -1,10 +1,10 @@
 <template>
-    <lightning-card title="Filtros" icon-name="utility:filter">
+    <lightning-card title="Filters" icon-name="utility:filter">
         <div class="slds-p-around_medium">
             <!-- Text search -->
             <lightning-input 
                 type="search" 
-                label="Buscar por Nombre o Dirección" 
+                label="Search by Name or Address" 
                 value={searchKey}
                 onchange={handleSearchKeyChange}
                 class="slds-m-bottom_small">
@@ -12,7 +12,7 @@
 
             <!-- Maximum Price Slider -->
             <lightning-slider 
-                label="Precio Máximo" 
+                label="Maximum Price" 
                 min="0" 
                 max="2000000" 
                 step="50000" 
@@ -24,7 +24,7 @@
             <!-- Room Filter -->
             <lightning-combobox
                 name="bedrooms"
-                label="Habitaciones (mínimo)"
+                label="Bedrooms (minimum)"
                 value={bedrooms}
                 options={roomOptions}
                 onchange={handleBedroomsChange}
@@ -34,7 +34,7 @@
             <!-- Bathroom Filter -->
             <lightning-combobox
                 name="bathrooms"
-                label="Baños (mínimo)"
+                label="Bathrooms (minimum)"
                 value={bathrooms}
                 options={roomOptions}
                 onchange={handleBathroomsChange}
