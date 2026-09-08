@@ -1,0 +1,55 @@
+<template>
+    <lightning-card title="Galería de Propiedades" icon-name="custom:custom85">
+        <div class="slds-p-around_medium">
+            <!-- Spinner charging indicator -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <lightning-spinner alternative-text="Cargando propiedades..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Property card grid -->
+            <template if:true={hasProperties}>
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <template for:each={properties} for:item="prop">
+                        <div key={prop.Id} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-m-bottom_medium">
+                            <c-property-tile property={prop} onselect={handlePropertySelect}></c-property-tile>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Pagination Bar -->
+                <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-top_medium">
+                    <div>
+                        <p class="slds-text-body_small">
+                            {totalItemCount} items • page {pageNumber} of {totalPages}
+                        </p>
+                    </div>
+                    <div>
+                        <lightning-button 
+                            label="Anterior" 
+                            icon-name="utility:chevronleft" 
+                            onclick={handlePrevious} 
+                            disabled={isFirstPage}
+                            class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button 
+                            label="Siguiente" 
+                            icon-name="utility:chevronright" 
+                            icon-position="right"
+                            onclick={handleNext} 
+                            disabled={isLastPage}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Empty State -->
+            <template if:true={isListEmpty}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <p>No properties were found that matched the selected criteria.</p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
