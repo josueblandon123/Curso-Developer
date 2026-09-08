@@ -1,0 +1,45 @@
+<template>
+    <lightning-card title="Filtros" icon-name="utility:filter">
+        <div class="slds-p-around_medium">
+            <!-- Text search -->
+            <lightning-input 
+                type="search" 
+                label="Buscar por Nombre o Dirección" 
+                value={searchKey}
+                onchange={handleSearchKeyChange}
+                class="slds-m-bottom_small">
+            </lightning-input>
+
+            <!-- Maximum Price Slider -->
+            <lightning-slider 
+                label="Precio Máximo" 
+                min="0" 
+                max="2000000" 
+                step="50000" 
+                value={maxPrice} 
+                onchange={handlePriceChange}
+                class="slds-m-bottom_small">
+            </lightning-slider>
+
+            <!-- Room Filter -->
+            <lightning-combobox
+                name="bedrooms"
+                label="Habitaciones (mínimo)"
+                value={bedrooms}
+                options={roomOptions}
+                onchange={handleBedroomsChange}
+                class="slds-m-bottom_small">
+            </lightning-combobox>
+
+            <!-- Bathroom Filter -->
+            <lightning-combobox
+                name="bathrooms"
+                label="Baños (mínimo)"
+                value={bathrooms}
+                options={roomOptions}
+                onchange={handleBathroomsChange}
+                class="slds-m-bottom_small">
+            </lightning-combobox>
+        </div>
+    </lightning-card>
+</template>
