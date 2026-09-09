@@ -72,3 +72,8 @@ sf project deploy start: Desplegar metadatos desde tu equipo local hacia la Org.
 sf project retrieve start: Descargar metadatos desde la Org hacia tu equipo local.
 
 sf apex run --file <filepath>: Ejecutar código Apex anónimo desde un archivo local.
+
+Comandos para realizar despliegue entre ambientes
+1- sf project deploy validate --manifest manifest/package.xml --test-level RunSpecifiedTests --tests <MyApexTestClass>
+
+2- sf project deploy quick --job-id <jobId>
