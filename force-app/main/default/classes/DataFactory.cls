@@ -6,7 +6,8 @@ public class DataFactory {
      */
     public static Broker__c createBroker(String brokerName) {
         Broker__c broker = new Broker__c(
-            Name = String.isNotBlank(brokerName) ? brokerName : 'Agente de Prueba'
+            Name = String.isNotBlank(brokerName) ? brokerName : 'Agente de Prueba',
+            Email__c = 'testemail@email.com'
         );
         insert broker;
         return broker;
