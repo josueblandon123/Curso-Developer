@@ -5,7 +5,8 @@ private class PropertyControllerTest {
     static void setupData() {
         // Create test broker if required by the relationship
         Broker__c testBroker = new Broker__c(
-            Name = 'Test Agent'
+            Name = 'Test Agent',
+            Email__c = 'testemail@email.com'
         );
         insert testBroker;
 

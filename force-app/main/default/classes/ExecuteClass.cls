@@ -101,9 +101,7 @@ if (!createdTasks.isEmpty()) {
 }
 
 
-
 ////////----------------------------------------------------------------------------////////
-
 
 
 // 1. Create and insert Broker
@@ -144,3 +142,82 @@ Property__c updatedProp = [SELECT Id, Status__c FROM Property__c WHERE Id = :pro
 System.debug('=== RESULTS ===');
 System.debug(' ID of the created sale: ' + insertedSale.Id + ' (' + insertedSale.Name + ')');
 System.debug(' New property status: ' + updatedProp.Status__c);
+
+
+////////----------------------------------------------------------------------------////////
+
+// SOQL Query Limit (100 SOQL queries por transacción síncrona)
+// DML Statements Limit (150 DML statements por transacción)
+
+// ID del RecordType para Person Account proporcionado
+Id personAccountRecordTypeId = '012gK000005dU6bQAE';
+
+List<Account> personAccountsToInsert = new List<Account>();
+
+// Generar 200 registros en un solo bucle
+for (Integer i = 1; i <= 500; i++) {
+    personAccountsToInsert.add(new Account(
+        RecordTypeId = personAccountRecordTypeId,
+        FirstName = 'ClienteTest' + i,
+        LastName = 'ApellidoTest' + i,
+        PersonEmail = 'cliente.test' + i + '@example.com'
+    ));
+}
+
+// Inserción bulk en una sola declaración DML (1 DML statement)
+try {
+    insert as user personAccountsToInsert;
+    System.debug(' SUCCESS: Se insertaron ' + personAccountsToInsert.size() + ' Person Accounts correctamente.');
+} catch (DmlException e) {
+    System.debug(' ERROR en inserción masiva: ' + e.getMessage());
+}
+
+////////----------------------------------------------------------------------------////////
+
+// Trigger Depth / Maximum Stack Depth Limit (16 llamadas recursivas)
+// 1. Crear una cuenta de prueba
+Account testAcc = new Account(Name = 'Cuenta Prueba Recursividad');
+insert testAcc;
+
+// 2. Ejecutar un update para disparar la cadena recursiva
+testAcc.Description = 'Disparo inicial';
+
+update testAcc;
+
+////////----------------------------------------------------------------------------////////
+
+// DML Row Limit (10,000 registros procesados por DML)
+
+// 1. Crear 100 cuentas en memoria
+List<Account> testAccounts = new List<Account>();
+for (Integer i = 1; i <= 100; i++) {
+    testAccounts.add(new Account(Name = 'Empresa Masiva ' + i));
+}
+
+// 2. Insertar las 100 cuentas en la base de datos
+insert testAccounts; // Esto disparará el trigger que intentará insertar 10,100 tareas
+
+////////----------------------------------------------------------------------------////////
+
+// CPU Time Limit (10,000 ms / 10 segundos para transacciones síncronas)
+
+// Forzamos el límite de CPU mediante operaciones sintéticas masivas en memoria
+try {
+    List<String> textList = new List<String>();
+    for (Integer i = 0; i < 10000; i++) {
+        textList.add('Sample String Value ' + i);
+    }
+
+    // Bucle anidado O(N^2) sobre strings para agotar rápidamente los 10,000 ms de CPU
+    for (String s1 : textList) {
+        for (String s2 : textList) {
+            Boolean containsValue = s1.contains(s2);
+            Double mathOp = Math.sin(100) * Math.cos(200);
+        }
+    }
+} catch (Exception e) {
+    System.debug('=== EXCEPCIÓN CAPTURADA EN CONSOLA ===');
+    System.debug('Tipo: ' + e.getTypeName());
+    System.debug('Mensaje: ' + e.getMessage());
+    System.debug('Linea de error: ' + e.getLineNumber());
+}

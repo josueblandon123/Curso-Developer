@@ -83,4 +83,21 @@ public class DataFactory {
 
         insert properties;
     }
+
+    /**
+     * Create and insert an individual property with custom parameters.
+     */
+    public static Property__c createSingleProperty(String name, Decimal price, String status, Id brokerId) {
+        Property__c prop = new Property__c(
+            Name = name,
+            Address__c = 'Dirección Test',
+            Price__c = price,
+            Bedrooms__c = 3,
+            Bathrooms__c = 2,
+            Status__c = String.isNotBlank(status) ? status : 'Available',
+            Broker__c = brokerId
+        );
+        insert prop;
+        return prop;
+    }
 }
