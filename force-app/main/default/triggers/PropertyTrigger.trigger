@@ -1,4 +1,4 @@
-trigger PropertyTrigger on Property__c (before insert, before update, after update) {
+trigger PropertyTrigger on Property__c (before insert, after Insert, before update, after update) {
 
     if (Trigger.isBefore) {
         if (Trigger.isInsert) {
@@ -6,8 +6,12 @@ trigger PropertyTrigger on Property__c (before insert, before update, after upda
         } else if (Trigger.isUpdate) {
             PropertyTriggerHandler.beforeUpdate(Trigger.new, Trigger.oldMap);
         }
-    } else if (Trigger.isAfter) {
-        if (Trigger.isUpdate) {
+    }
+    
+    if (Trigger.isAfter) {
+        if (Trigger.isInsert) {
+            PropertyTriggerHandler.afterInsert(Trigger.new);
+        } else if (Trigger.isUpdate) {
             PropertyTriggerHandler.afterUpdate(Trigger.new, Trigger.oldMap);
         }
     }

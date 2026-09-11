@@ -3,20 +3,19 @@ private class PropertyTriggerHelperTest {
 
     @testSetup
     static void setupData() {
-        // Generate a broker for valid tests.
+        // Generar un broker para las pruebas
         DataFactory.createBroker('Broker de Prueba');
     }
 
     @isTest
     static void testValidateBrokerAssignment_Success() {
+        Test.setMock(HttpCalloutMock.class, new ExchangeRateHttpCalloutMock());
         Broker__c broker = [SELECT Id FROM Broker__c LIMIT 1];
 
-        // Create a valid property with 'Sold' status and an assigned broker.
         Test.startTest();
         Property__c prop = DataFactory.createSingleProperty('Casa Vendida Con Broker', 200000, 'Sold', broker.Id);
         Test.stopTest();
 
-        // Verify that the record was successfully inserted and created with an Id
         Assert.areNotEqual(null, prop.Id, 'The property record should be successfully inserted with an Id.');
         
         Property__c insertedProp = [SELECT Id, Status__c, Broker__c FROM Property__c WHERE Id = :prop.Id];
@@ -28,7 +27,6 @@ private class PropertyTriggerHelperTest {
     static void testValidateBrokerAssignment_ValidationError() {
         Boolean exceptionThrown = false;
 
-        // Attempting to create a 'Sold' property WITHOUT an assigned broker should throw a DMLException
         Test.startTest();
         try {
             Property__c prop = DataFactory.createSingleProperty('Casa Vendida Sin Broker', 200000, 'Sold', null);
@@ -46,17 +44,18 @@ private class PropertyTriggerHelperTest {
 
     @isTest
     static void testCreateTasksOnPriceChange_SignificantChange() {
+        // The mock is added because `createSingleProperty` performs an `INSERT` that triggers the `Queueable` in the `After Insert` event.
+        Test.setMock(HttpCalloutMock.class, new ExchangeRateHttpCalloutMock());
+
         Broker__c broker = [SELECT Id FROM Broker__c LIMIT 1];
         Property__c prop = DataFactory.createSingleProperty('Propiedad Cambio Precio', 100000, 'Available', broker.Id);
 
-        // Modify the price by increasing it by more than 10% (from 100,000 to 120,000 = +20%)
         prop.Price__c = 120000;
 
         Test.startTest();
         update prop;
         Test.stopTest();
 
-        // Verify that the review task has been generated.
         List<Task> tasksCreated = [SELECT Id, Subject, WhatId, Priority FROM Task WHERE WhatId = :prop.Id];
         Assert.areEqual(1, tasksCreated.size(), 'One task must be created for each significant price change.');
         Assert.isTrue(tasksCreated[0].Subject.contains('Review significant price change'), 'The assignment subject line must match.');
@@ -65,18 +64,35 @@ private class PropertyTriggerHelperTest {
 
     @isTest
     static void testCreateTasksOnPriceChange_InsignificantChange() {
+        // The mock is added because `createSingleProperty` performs an `INSERT` that triggers the `Queueable` in the `After Insert` event.
+        Test.setMock(HttpCalloutMock.class, new ExchangeRateHttpCalloutMock());
+
         Broker__c broker = [SELECT Id FROM Broker__c LIMIT 1];
         Property__c prop = DataFactory.createSingleProperty('Propiedad Ajuste Menor', 100000, 'Available', broker.Id);
 
-        // Modify the price by less than 10% (from 100,000 to 105,000 = +5%)
         prop.Price__c = 105000;
 
         Test.startTest();
         update prop;
         Test.stopTest();
 
-        // Verify that no tasks have been created.
         List<Task> tasksCreated = [SELECT Id FROM Task WHERE WhatId = :prop.Id];
         Assert.areEqual(0, tasksCreated.size(), 'No task should be created if the variation is less than 10%.');
+    }
+
+    @isTest
+    static void testPropertyInsertTriggersQueueableExchangeRate() {
+        Test.setMock(HttpCalloutMock.class, new ExchangeRateHttpCalloutMock());
+
+        Broker__c broker = [SELECT Id FROM Broker__c LIMIT 1];
+
+        Test.startTest();
+        Property__c prop = DataFactory.createSingleProperty('Casa Nueva HNL', 100000, 'Available', broker.Id);
+        Test.stopTest();
+
+        Property__c updatedProp = [SELECT Id, HNL_Rate__c, Price_HNL__c FROM Property__c WHERE Id = :prop.Id];
+        
+        Assert.areEqual(26.81, updatedProp.HNL_Rate__c, 'The HNL rate should have been updated to 26.81 from the Callout.');
+        Assert.areEqual(2681000, updatedProp.Price_HNL__c, 'The price in HNL should have been calculated correctly (100,000 * 26.81).');
     }
 }

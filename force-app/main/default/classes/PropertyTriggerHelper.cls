@@ -44,4 +44,23 @@ public with sharing class PropertyTriggerHelper {
             insert tasksToInsert;
         }
     }
+
+    /**
+     * Enqueue a Queueable job in an After Insert trigger to retrieve the HNL rate via an asynchronous callout.
+     */
+    public static void processExchangeRateOnInsert(List<Property__c> newProperties) {
+        List<Id> propertyIds = new List<Id>();
+
+        for (Property__c prop : newProperties) {
+            propertyIds.add(prop.Id);
+        }
+
+        if (!propertyIds.isEmpty()) {
+            // Using the Queueable class
+            //System.enqueueJob(new PropertyExchangeRateQueueable(propertyIds));
+
+            // Using the Future class
+            PropertyExchangeRateService.updateExchangeRatesFuture(propertyIds);
+        }
+    }
 }

@@ -4,6 +4,10 @@ public with sharing class PropertyTriggerHandler {
         PropertyTriggerHelper.validateBrokerAssignment(newProperties);
     }
 
+    public static void afterInsert(List<Property__c> newProperties) {
+        PropertyTriggerHelper.processExchangeRateOnInsert(newProperties);
+    }
+
     public static void beforeUpdate(List<Property__c> newProperties, Map<Id, Property__c> oldPropertyMap) {
         PropertyTriggerHelper.validateBrokerAssignment(newProperties);
     }
