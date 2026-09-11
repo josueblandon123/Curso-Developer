@@ -57,12 +57,16 @@ private class IS_AccountDescriptionServiceTest {
         IS_AccountDescriptionService.setGenericDescription(accountIds);
         Test.stopTest();
 
-        List<Account> updatedAccounts = [
-            SELECT Id, Description
-            FROM Account
-            WHERE Id IN :accountIds AND Description = 'Cuenta actualizada automáticamente por el sistema.'
-        ];
-        Assert.areEqual(200, updatedAccounts.size(), 'Las 200 cuentas deben quedar con la descripción genérica.');
+        // Description es un Long Text Area: no se puede filtrar por SOQL, se compara en Apex.
+        List<Account> updatedAccounts = [SELECT Id, Description FROM Account WHERE Id IN :accountIds];
+
+        Integer accountsWithGenericDescription = 0;
+        for (Account acc : updatedAccounts) {
+            if (acc.Description == 'Cuenta actualizada automáticamente por el sistema.') {
+                accountsWithGenericDescription++;
+            }
+        }
+        Assert.areEqual(200, accountsWithGenericDescription, 'Las 200 cuentas deben quedar con la descripción genérica.');
     }
 
     @isTest
